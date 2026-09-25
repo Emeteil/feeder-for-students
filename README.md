@@ -118,6 +118,11 @@ Arduino IDE, но помните про особенность с подпапк
 git config --global user.name "Имя Фамилия"
 git config --global user.email "you@example.com"
 ```
+`user.email` укажите тот же, что привязан к вашему аккаунту на GitHub
+(или любой из адресов, добавленных в `Settings → Emails`) — иначе
+коммиты запушатся, но GitHub не свяжет их с вашим профилем (не будет
+аватарки/ссылки на профиль, коммит не засчитается в ваш вклад).
+
 На Windows (вне WSL) дополнительно рекомендуется:
 ```sh
 git config --global core.autocrlf true
