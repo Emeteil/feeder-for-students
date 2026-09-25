@@ -1,0 +1,6 @@
+/.vscode
+/.pio
+/build
+/platformio_local.ini
+src/core/config_local.h
+*.bak

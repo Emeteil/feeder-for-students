@@ -1,0 +1,15 @@
+#pragma once
+
+/*
+ * Скопируйте этот файл в src/core/config_local.h (он в .gitignore
+ * и не попадёт в git) и подставьте свои значения.
+ *
+ * Если файла src/core/config_local.h нет - проект не соберётся,
+ * это специально: так вы не забудете его создать и случайно
+ * не закоммитите чужой Wi-Fi пароль или токен бота.
+ */
+
+#define WIFI_SSID     "your-wifi-name"
+#define WIFI_PASSWORD "your-wifi-password"
+
+#define TELEGRAM_BOT_TOKEN "123456:ABC-put-your-token-here"
