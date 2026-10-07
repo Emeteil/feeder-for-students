@@ -197,6 +197,7 @@ feeder-for-students/
     │   ├── config.h              # общие настройки + подключение config_local.h
     │   ├── app_state.h            # общее состояние (AppState)
     │   └── event_bus.h/.cpp        # событийная шина между модулями
+    ├── utils/                  # общие утилиты без Init()/Update() (см. docs/utils.md)
     ├── app/
     │   └── app.h/.cpp            # сборка модулей: кто и в каком порядке
     └── modules/

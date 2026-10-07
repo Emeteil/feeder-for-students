@@ -50,6 +50,7 @@ feeder-for-students/
 ├── docs/                       # документация проекта, см. ниже
 └── src/
     ├── core/                   # общее для всех модулей: пины, конфиг, состояние, EventBus
+    ├── utils/                  # общие утилиты без Init()/Update() (см. docs/utils.md)
     ├── app/                    # сборка модулей в прошивку (App::Init/Update)
     └── modules/                # сами модули: display, dispenser, sensors, connectivity, telegram_bot, power
 ```
