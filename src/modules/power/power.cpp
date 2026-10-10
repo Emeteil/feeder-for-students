@@ -27,6 +27,7 @@ namespace Power
         }
         lastPollAtMs = millis();
 
+        Serial.println("Power::Update() - TODO: прочитать ADC и записать в State.batteryVoltage");
         // TODO: прочитать ADC, перевести в вольты с учётом делителя напряжения,
         // записать в State.batteryVoltage.
     }
