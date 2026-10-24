@@ -149,8 +149,7 @@ void Update()
 `switch` в `Update()`). Более простой вариант того же приёма —
 периодический опрос раз в N мс без состояний — уже реализован и
 рабочий в
-[`src/modules/sensors/sensors.cpp`](../src/modules/sensors/sensors.cpp)
-и [`src/modules/power/power.cpp`](../src/modules/power/power.cpp).
+[`src/modules/sensors/sensors.cpp`](../src/modules/sensors/sensors.cpp).
 
 Если задача принципиально не влезает в "неблокирующий тик" (например,
 действительно долгая и сложная последовательность) — не деляйте это
@@ -205,6 +204,6 @@ feeder-for-students/
         ├── dispenser/             # механика выдачи (моторы/серво)
         ├── sensors/                # датчики препятствия и т.п.
         ├── connectivity/            # подключение к Wi-Fi
-        ├── telegram_bot/             # Telegram Bot API
-        └── power/                     # мониторинг питания
+        └── telegram_bot/             # Telegram Bot API
 ```
+

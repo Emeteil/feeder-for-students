@@ -22,9 +22,6 @@ struct AppState
     // Отвечает: src/modules/dispenser
     bool dispenserBusy = false;
     uint16_t totalDispensedCount = 0;
-
-    // Отвечает: src/modules/power
-    float batteryVoltage = 0.0f;
 };
 
 extern AppState State;
