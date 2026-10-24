@@ -52,7 +52,7 @@ feeder-for-students/
     ├── core/                   # общее для всех модулей: пины, конфиг, состояние, EventBus
     ├── utils/                  # общие утилиты без Init()/Update() (см. docs/utils.md)
     ├── app/                    # сборка модулей в прошивку (App::Init/Update)
-    └── modules/                # сами модули: display, dispenser, sensors, connectivity, telegram_bot, power
+    └── modules/                # сами модули: display, dispenser, sensors, connectivity, telegram_bot
 ```
 
 ## Быстрый старт
@@ -456,7 +456,6 @@ git push --force-with-lease
   - Backend/бизнес-логика: диспенсер, датчики (`src/modules/dispenser/`,
     `src/modules/sensors/`)
   - Сеть и телеграм-бот (`src/modules/connectivity/`, `src/modules/telegram_bot/`)
-  - Система питания (`src/modules/power/`)
   - Документация (`docs/`)
 
 ## FAQ / Troubleshooting
