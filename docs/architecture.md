@@ -206,3 +206,4 @@ feeder-for-students/
         ├── connectivity/            # подключение к Wi-Fi
         └── telegram_bot/             # Telegram Bot API
 ```
+
