@@ -205,4 +205,5 @@ feeder-for-students/
         ├── sensors/                # датчики препятствия и т.п.
         ├── connectivity/            # подключение к Wi-Fi
         ├── telegram_bot/             # Telegram Bot API
+        └──
 ```
