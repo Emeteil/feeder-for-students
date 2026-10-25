@@ -30,7 +30,7 @@ namespace TelegramBot
 
         client.setInsecure();
 
-        client.setProxy(HTTP_PROXY_URL);
+        //client.setProxy(HTTP_PROXY_URL); пока что не получается
 
         bot.updateToken(TELEGRAM_BOT_TOKEN);
 
