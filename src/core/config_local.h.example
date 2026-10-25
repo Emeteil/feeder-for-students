@@ -12,4 +12,6 @@
 #define WIFI_SSID     "your-wifi-name"
 #define WIFI_PASSWORD "your-wifi-password"
 
-#define TELEGRAM_BOT_TOKEN "123456:ABC-put-your-token-here"
+#define TELEGRAM_BOT_TOKEN "your-telegram-bot-token"
+#define TELEGRAM_CHAT_ID "your-chat-id"
+#define HTTP_PROXY_URL "your-proxy-url"
