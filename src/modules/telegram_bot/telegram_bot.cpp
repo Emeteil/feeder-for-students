@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
+#include <ESP32Servo.h>
 
 #include "../../core/config.h"
 #include "../../core/app_state.h"
@@ -20,6 +21,13 @@ namespace TelegramBot
 
         WiFiClientSecure client;
         UniversalTelegramBot bot("", client);
+
+         // Настройки сервопривода (для теста)
+        Servo testServo;
+        const int SERVO_PIN = 18; // номер пина, куда подключен сигнальный провод серво
+        bool isServoRotated = false;
+        unsigned long servoRotatedAtMs = 0;
+        const unsigned long SERVO_RETURN_DELAY_MS = 1500; // Вернется в исходное положение через 1.5 сек
     }
 
     void Init()
@@ -34,10 +42,21 @@ namespace TelegramBot
 
         bot.updateToken(TELEGRAM_BOT_TOKEN);
 
+        testServo.attach(SERVO_PIN);
+        testServo.write(0);
+        
+        Serial.println("TelegramBot: Модуль и тестовый сервопривод инициализированы.");
     }
 
     void Update()
     {
+        if (isServoRotated && (millis() - servoRotatedAtMs >= SERVO_RETURN_DELAY_MS))
+        {
+            testServo.write(0);
+            isServoRotated = false;
+            Serial.println("TelegramBot | Сервопривод вернулся в 0 градусов");
+        }
+
         if (!State.wifiConnected)
         {
             return;
@@ -49,42 +68,44 @@ namespace TelegramBot
         }
         lastPollAtMs = millis();
 
-        // Запрашиваем новые сообщения у Telegram
+        // Запрашиваем новые сообщения один раз за тик таймера
         int newMessages = bot.getUpdates(bot.last_message_received + 1);
 
-        // Обрабатываем ёочередь сообщений
-        while (newMessages)
+        if (newMessages > 0)
         {
             for (int i = 0; i < newMessages; i++)
             {
                 String chat_id = String(bot.messages[i].chat_id);
-                String text    = bot.messages[i].text;
+                String text = bot.messages[i].text;
 
                 Serial.print("TelegramBot | chat_id: ");
                 Serial.print(chat_id);
                 Serial.print(" | text: ");
                 Serial.println(text);
 
-                // Защита: проверяем, что пишет именно твой CHAT_ID из настроек конфигурации
                 if (chat_id != TELEGRAM_CHAT_ID)
                 {
-                    Serial.println("TelegramBot | Неизвестный CHAT_ID, игнорирую.");
+                    Serial.println("TelegramBot | Неизвестный CHAT_ID, пропускаю");
                     continue;
                 }
 
-                // Обработка стартовой команды
                 if (text == "/start")
                 {
-                    Serial.println("TelegramBot | Отвечаю на команду /start");
+                    Serial.println("TelegramBot | Отвечаю на /start");
                     bot.sendMessage(chat_id, "Привет!", "");
+                }
+
+                else if (text == "/rotate")
+                {
+                    Serial.println("TelegramBot | Получена команда /rotate, поворачиваю серво!");
+                    bot.sendMessage(chat_id, "Вращаю сервопривод на 90 градусов!", "");
                     
-                    // ЗДЕСЬ в будущем будет логика выдачи снека:
-                    // Например: Dispenser::dispense();
+                    // Поворачиваем серво на 90 градусов и запускаем таймер возврата
+                    testServo.write(90);
+                    isServoRotated = true;
+                    servoRotatedAtMs = millis();
                 }
             }
-            
-            // Проверяем, не пришло ли еще что-то, пока мы обрабатывали старые сообщения
-            newMessages = bot.getUpdates(bot.last_message_received + 1);
         }
     }
 }
