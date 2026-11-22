@@ -18,7 +18,6 @@ namespace App
         // EventBus должен быть готов до Init() остальных модулей,
         // т.к. они подписываются на события внутри своего Init().
         EventBus::Init();
-
         Connectivity::Init();
         Display::Init();
         Dispenser::Init();

@@ -2,110 +2,175 @@
 
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
-#include <UniversalTelegramBot.h>
+#include <AsyncTelegram2.h>
 #include <ESP32Servo.h>
 
 #include "../../core/config.h"
 #include "../../core/app_state.h"
-#include "../../core/event_bus.h"
+#include "../../core/pins.h"
 
 namespace TelegramBot
 {
     namespace
     {
-        // Опрашиваем Telegram (getUpdates) раз в POLL_INTERVAL_MS, а не
-        // в бесконечном блокирующем цикле - так плата успевает делать
-        // остальные дела (экран, датчики, диспенсер) между опросами.
-        const unsigned long POLL_INTERVAL_MS = 1000;
-        unsigned long lastPollAtMs = 0;
+        // Раз в сколько миллисекунд можно снова пробовать подключиться к Telegram
+        const unsigned long START_RETRY_MS = 5000;
+
+        // Через сколько миллисекунд серво возвращается в 0 градусов
+        const unsigned long SERVO_RETURN_DELAY_MS = 1500;
+
+        // Если столько миллисекунд новых сообщений нет, очередь старых считается разобранной
+        const unsigned long DRAIN_QUIET_MS = 3000;
 
         WiFiClientSecure client;
-        UniversalTelegramBot bot("", client);
+        AsyncTelegram2 bot(client);
 
-         // Настройки сервопривода (для теста)
+        bool botStarted = false;
+        unsigned long lastStartAttemptAtMs = 0;
+
+        // Пока draining == true, все входящие сообщения читаем и выбрасываем.
+        // Так разбирается очередь команд, накопившаяся до перезагрузки.
+        bool draining = false;
+        unsigned long lastMessageSeenAtMs = 0;
+
         Servo testServo;
-        const int SERVO_PIN = 18; // номер пина, куда подключен сигнальный провод серво
         bool isServoRotated = false;
         unsigned long servoRotatedAtMs = 0;
-        const unsigned long SERVO_RETURN_DELAY_MS = 1500; // Вернется в исходное положение через 1.5 сек
+
+        void UpdateServo()
+        {
+            if (isServoRotated && millis() - servoRotatedAtMs >= SERVO_RETURN_DELAY_MS)
+            {
+                testServo.write(0);
+                isServoRotated = false;
+                Serial.println("TelegramBot | Сервопривод вернулся в 0 градусов");
+            }
+        }
+
+        void StartBot()
+        {
+            if (botStarted)
+            {
+                return;
+            }
+            if (millis() - lastStartAttemptAtMs < START_RETRY_MS)
+            {
+                return;
+            }
+
+            lastStartAttemptAtMs = millis();
+
+            // begin() делает TLS-рукопожатие и блокирует loop() на 1-4 секунды.
+            // Вызывается только при (пере)подключении.
+            botStarted = bot.begin();
+
+            if (botStarted)
+            {
+                draining = true;
+                lastMessageSeenAtMs = millis();
+                Serial.println("TelegramBot | Подключились к Telegram, разбираю старую очередь");
+            }
+            else
+            {
+                Serial.println("TelegramBot | Не удалось подключиться к Telegram, повторю позже");
+            }
+        }
+
+        void DrainTick(MessageType type)
+        {
+            if (type != MessageNoData)
+            {
+                lastMessageSeenAtMs = millis();
+                Serial.println("TelegramBot | Пропускаю сообщение, пришедшее до старта");
+                return;
+            }
+
+            if (millis() - lastMessageSeenAtMs >= DRAIN_QUIET_MS)
+            {
+                draining = false;
+                Serial.println("TelegramBot | Очередь старых сообщений разобрана");
+            }
+        }
+
+        void HandleMessage(const TBMessage &msg)
+        {
+            // У групп и каналов chat_id отрицательный - такие сообщения не обрабатываем.
+            if (msg.chatId < 0)
+            {
+                Serial.println("TelegramBot | Сообщение не из личного чата, пропускаю");
+                return;
+            }
+
+            Serial.print("TelegramBot | Команда от пользователя ");
+            Serial.print(msg.sender.id);
+            Serial.print(": ");
+            Serial.println(msg.text);
+
+            if (msg.text == "/start")
+            {
+                bot.sendMessage(msg, "Привет!");
+            }
+            else if (msg.text == "/rotate")
+            {
+                int randomAngle = random(0, 181);
+                testServo.write(randomAngle);
+                isServoRotated = true;
+                servoRotatedAtMs = millis();
+                String reply = "Вращаю сервопривод на " + String(randomAngle) + " градусов!";
+                bot.sendMessage(msg, reply);
+            }
+        }
     }
 
     void Init()
     {
-        // TODO: инициализация HTTP-клиента (например WiFiClientSecure +
-        // UniversalTelegramBot или аналог), TELEGRAM_BOT_TOKEN - из
-        // src/core/config.h / config_local.h.
-
         client.setInsecure();
 
-        //client.setProxy(HTTP_PROXY_URL); пока что не получается
+        // Вариант 1: поменять хост на свой релей
+        // bot.setTelegramHost(TELEGRAM_RELAY_HOST);
 
-        bot.updateToken(TELEGRAM_BOT_TOKEN);
+        // Вариант 2: CORS-прокси, адрес Telegram добавляется префиксом к пути
+        bot.setTelegramHost(TELEGRAM_CORS_PROXY_HOST);
+        bot.setCorsProxyPrefix(TELEGRAM_CORS_PROXY_PREFIX);
 
-        testServo.attach(SERVO_PIN);
+        bot.setTelegramToken(TELEGRAM_BOT_TOKEN);
+        bot.setUpdateTime(1000);
+
+        testServo.attach(PIN_SERVO_TEST);
         testServo.write(0);
-        
-        Serial.println("TelegramBot: Модуль и тестовый сервопривод инициализированы.");
+
+        Serial.println("TelegramBot | Модуль инициализирован");
     }
 
     void Update()
     {
-        if (isServoRotated && (millis() - servoRotatedAtMs >= SERVO_RETURN_DELAY_MS))
-        {
-            testServo.write(0);
-            isServoRotated = false;
-            Serial.println("TelegramBot | Сервопривод вернулся в 0 градусов");
-        }
+        UpdateServo();
 
         if (!State.wifiConnected)
         {
+            botStarted = false;
             return;
         }
 
-        if (millis() - lastPollAtMs < POLL_INTERVAL_MS)
+        StartBot();
+        if (!botStarted)
         {
             return;
         }
-        lastPollAtMs = millis();
 
-        // Запрашиваем новые сообщения один раз за тик таймера
-        int newMessages = bot.getUpdates(bot.last_message_received + 1);
+        // getNewMessage() не ждёт ответа сервера: берёт сообщение, если оно уже пришло
+        TBMessage msg;
+        MessageType type = bot.getNewMessage(msg);
 
-        if (newMessages > 0)
+        if (draining)
         {
-            for (int i = 0; i < newMessages; i++)
-            {
-                String chat_id = String(bot.messages[i].chat_id);
-                String text = bot.messages[i].text;
+            DrainTick(type);
+            return;
+        }
 
-                Serial.print("TelegramBot | chat_id: ");
-                Serial.print(chat_id);
-                Serial.print(" | text: ");
-                Serial.println(text);
-
-                if (chat_id != TELEGRAM_CHAT_ID)
-                {
-                    Serial.println("TelegramBot | Неизвестный CHAT_ID, пропускаю");
-                    continue;
-                }
-
-                if (text == "/start")
-                {
-                    Serial.println("TelegramBot | Отвечаю на /start");
-                    bot.sendMessage(chat_id, "Привет!", "");
-                }
-
-                else if (text == "/rotate")
-                {
-                    Serial.println("TelegramBot | Получена команда /rotate, поворачиваю серво!");
-                    bot.sendMessage(chat_id, "Вращаю сервопривод на 90 градусов!", "");
-                    
-                    // Поворачиваем серво на 90 градусов и запускаем таймер возврата
-                    testServo.write(90);
-                    isServoRotated = true;
-                    servoRotatedAtMs = millis();
-                }
-            }
+        if (type == MessageText)
+        {
+            HandleMessage(msg);
         }
     }
 }
