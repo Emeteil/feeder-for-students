@@ -8,6 +8,7 @@
 #include "../modules/dispenser/dispenser.h"
 #include "../modules/sensors/sensors.h"
 #include "../modules/telegram_bot/telegram_bot.h"
+#include "../modules/tasks/tasks.h"
 
 AppState State;
 
@@ -24,6 +25,7 @@ namespace App
         Dispenser::Init();
         Sensors::Init();
         TelegramBot::Init();
+        Tasks::Init();
     }
 
     void Update()
@@ -35,5 +37,6 @@ namespace App
         Dispenser::Update();
         Sensors::Update();
         TelegramBot::Update();
+        Tasks::Update();
     }
 }

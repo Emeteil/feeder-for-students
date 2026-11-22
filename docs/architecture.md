@@ -188,6 +188,7 @@ feeder-for-students/
 ├── feeder-for-students.ino     # точка входа: setup()/loop() → App
 ├── platformio.ini              # конфигурация PlatformIO
 ├── justfile                    # команды build/upload/monitor и т.п.
+├── tasks.json                  # хранение всех задач
 ├── docs/                       # документация проекта (этот файл и др.)
 │   └── modules/                # документация по каждому модулю
 └── src/
@@ -204,6 +205,7 @@ feeder-for-students/
         ├── dispenser/             # механика выдачи (моторы/серво)
         ├── sensors/                # датчики препятствия и т.п.
         ├── connectivity/            # подключение к Wi-Fi
-        └── telegram_bot/             # Telegram Bot API
+        ├── telegram_bot/             # Telegram Bot API
+        └── tasks/                  # Банк задач и взаимодействие с Telegram Bot
 ```
 

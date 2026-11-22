@@ -1,0 +1,38 @@
+{
+    "database_version": 1,
+    "tasks": [
+        {
+            "id": 1,
+            "type": "choice",
+            "difficulty": "easy",
+            "topic": "math",
+            "question": "2 + 2 * 2 = ?",
+            "options": ["20", "0", "4", "6"],
+            "answers": ["6"],
+            "tolerance": 0,
+            "explanation": "сначала умножение"
+        },
+        {
+            "id": 2,
+            "type": "number",
+            "difficulty": "medium",
+            "topic": "math",
+            "question": "15% от 200 = ?",
+            "options": [],
+            "answers": ["30"],
+            "tolerance": 0,
+            "explanation": "200 * 0.15 = 30"
+        },
+        {
+            "id": 3,
+            "type": "text",
+            "difficulty": "high",
+            "topic": "programming",
+            "question": "расшифруйте аббревиатуру CPU",
+            "options": [],
+            "answers": ["central processing unit", "Central processing unit", "Central Processing Unit"],
+            "tolerance": 0.5,
+            "explanation": "сначала умножение"
+        }
+    ]
+}
