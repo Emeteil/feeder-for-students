@@ -9,7 +9,7 @@ build:
 upload:
     pio run -e {{env}} -t upload
 
-# Монитор порта (вывод Serial.print и т.п.), выход - Ctrl+C
+# Монитор порта (вывод логов прошивки), выход - Ctrl+C
 monitor:
     pio device monitor -b 115200
 

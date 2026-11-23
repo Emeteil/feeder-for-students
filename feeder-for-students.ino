@@ -14,12 +14,10 @@
  * и пример неблокирующего таймера в src/modules/dispenser/dispenser.cpp.
  */
 #include <Arduino.h>
-#include "src/core/config.h"
 #include "src/app/app.h"
 
 void setup()
 {
-    Serial.begin(SERIAL_BAUD_RATE);
     App::Init();
 }
 

@@ -3,6 +3,8 @@
 #include "../core/event_bus.h"
 #include "../core/app_state.h"
 
+#include "../utils/log.h"
+
 #include "../modules/connectivity/connectivity.h"
 #include "../modules/display/display.h"
 #include "../modules/dispenser/dispenser.h"
@@ -18,6 +20,7 @@ namespace App
         // EventBus должен быть готов до Init() остальных модулей,
         // т.к. они подписываются на события внутри своего Init().
         EventBus::Init();
+        Log::Init();
 
         Connectivity::Init();
         Display::Init();

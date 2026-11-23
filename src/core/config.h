@@ -11,7 +11,12 @@
  * и подставьте свои значения.
  */
 
+#include "../utils/log.h"
+
 #define SERIAL_BAUD_RATE 115200
+
+// Минимальный уровень логирования. Level::Off отключает вывод.
+const Log::Level LOG_LEVEL = Log::Level::Info;
 
 // Как часто (мс) можно печатать debug-лог одного и того же события,
 // чтобы не засорять Serial Monitor. Используйте вместе с millis(),
