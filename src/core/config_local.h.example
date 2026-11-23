@@ -13,7 +13,10 @@
 #define WIFI_PASSWORD "your-wifi-password"
 
 #define TELEGRAM_BOT_TOKEN "your-telegram-bot-token"
-#define HTTP_PROXY_URL "your-proxy-url"
+// По умолчанию бот подключается к Telegram напрямую.
+// Для релея раскомментируйте настройку хоста:
+// #define TELEGRAM_RELAY_HOST "relay.example.com"
 
-#define TELEGRAM_CORS_PROXY_HOST "cors-proxy-host"
-#define TELEGRAM_CORS_PROXY_PREFIX "cors-proxy-prefix"
+// Для прокси раскомментируйте обе настройки:
+// #define TELEGRAM_CORS_PROXY_HOST "proxy.example.com"
+// #define TELEGRAM_CORS_PROXY_PREFIX "/telegram"

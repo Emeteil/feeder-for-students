@@ -13,10 +13,13 @@ namespace TelegramBot
 {
     namespace
     {
-        constexpr char LOG_MODULE[] = "TelegramBot";
+        const char LOG_MODULE[] = "TelegramBot";
 
         // Раз в сколько миллисекунд можно снова пробовать подключиться к Telegram
         const unsigned long START_RETRY_MS = 5000;
+
+        const unsigned long UPDATE_INTERVAL_MS = 500;
+        const unsigned long POLL_TICK_MS = 50;
 
         // Если столько миллисекунд новых сообщений нет, очередь старых считается разобранной
         const unsigned long DRAIN_QUIET_MS = 1000;
@@ -26,6 +29,7 @@ namespace TelegramBot
 
         bool botStarted = false;
         unsigned long lastStartAttemptAtMs = 0;
+        unsigned long lastPollAtMs = 0;
 
         // Пока draining == true, все входящие сообщения читаем и выбрасываем.
         // Так разбирается очередь команд, накопившаяся до перезагрузки.
@@ -46,7 +50,7 @@ namespace TelegramBot
 
             lastStartAttemptAtMs = millis();
 
-            // begin() делает TLS-рукопожатие и блокирует loop() на 1-4 секунды.
+            // begin() может задержать loop() при открытии TLS и запросе getMe.
             // Вызывается только при (пере)подключении.
             botStarted = bot.begin();
 
@@ -78,6 +82,14 @@ namespace TelegramBot
             }
         }
 
+        void SendReply(const TBMessage &msg, const char *text)
+        {
+            if (!bot.sendMessage(msg, text))
+            {
+                Log::Warning(LOG_MODULE, "Не удалось отправить запрос sendMessage для чата %" PRId64, msg.chatId);
+            }
+        }
+
         void HandleMessage(const TBMessage &msg)
         {
             // У групп и каналов chat_id отрицательный - такие сообщения не обрабатываем.
@@ -91,13 +103,13 @@ namespace TelegramBot
 
             if (msg.text == "/start")
             {
-                bot.sendMessage(msg, "Привет!");
+                SendReply(msg, "Привет!");
                 return;
             }
 
             if (msg.text == "/help")
             {
-                bot.sendMessage(msg, "Я бот проекта Feeder for Students.");
+                SendReply(msg, "Я бот проекта Feeder for Students.");
                 return;
             }
 
@@ -124,7 +136,7 @@ namespace TelegramBot
             reply += "\nТекст:\n";
             reply += msg.text;
 
-            bot.sendMessage(msg, reply.c_str());
+            SendReply(msg, reply.c_str());
         }
     }
 
@@ -144,7 +156,9 @@ namespace TelegramBot
         #endif
 
         bot.setTelegramToken(TELEGRAM_BOT_TOKEN);
-        bot.setUpdateTime(500);
+        bot.setUpdateTime(UPDATE_INTERVAL_MS);
+        bot.setFormattingStyle(AsyncTelegram2::NONE);
+        bot.setSerialDiagnostics(false);
 
         Log::Info(LOG_MODULE, "Модуль инициализирован");
     }
@@ -163,7 +177,13 @@ namespace TelegramBot
             return;
         }
 
-        // getNewMessage() не ждёт ответа сервера: берёт сообщение, если оно уже пришло
+        const unsigned long now = millis();
+        if (now - lastPollAtMs < POLL_TICK_MS)
+        {
+            return;
+        }
+        lastPollAtMs = now;
+
         TBMessage msg;
         MessageType type = bot.getNewMessage(msg);
 

@@ -15,7 +15,7 @@ namespace Connectivity
 {
     namespace
     {
-        constexpr char LOG_MODULE[] = "Connectivity";
+        const char LOG_MODULE[] = "Connectivity";
 
         // Пример неблокирующего переподключения: НЕ используем
         // WiFi.waitForConnectResult() (он блокирует), а просто

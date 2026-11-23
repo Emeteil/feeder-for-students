@@ -16,7 +16,7 @@
 #define SERIAL_BAUD_RATE 115200
 
 // Минимальный уровень логирования. Level::Off отключает вывод.
-constexpr Log::Level LOG_LEVEL = Log::Level::Info;
+const Log::Level LOG_LEVEL = Log::Level::Info;
 
 // Как часто (мс) можно печатать debug-лог одного и того же события,
 // чтобы не засорять Serial Monitor. Используйте вместе с millis(),
